@@ -1,0 +1,144 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Food Menu Generator";
+}
+
+<div class="text-center">
+    <h1 class="display-4">🍽️ Food Menu Generator</h1>
+
+    @if (!string.IsNullOrEmpty(Model.ViewModel.ErrorMessage))
+    {
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            @Model.ViewModel.ErrorMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row mt-4">
+        <div class="col-md-6 offset-md-3">
+            <!-- Add Food Form -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Add Food Item</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" asp-page-handler="AddFood">
+                        <div class="input-group">
+                            <input type="text"
+                                   class="form-control"
+                                   asp-for="NewFood"
+                                   placeholder="Enter a food item..."
+                                   required>
+                            <button type="submit" class="btn btn-success">
+                                ➕ Add Food
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Food List -->
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Your Food List</h5>
+                    <span class="badge bg-light text-dark">@Model.ViewModel.Foods.Count items</span>
+                </div>
+                <div class="card-body">
+                    @if (Model.ViewModel.Foods.Count == 0)
+                    {
+                        <p class="text-muted">No foods added yet. Add some foods above!</p>
+                    }
+                    else
+                    {
+                        <div class="list-group">
+                            @foreach (var food in Model.ViewModel.Foods)
+                            {
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    @food.Name
+                                    <form method="post" asp-page-handler="DeleteFood" style="display: inline;">
+                                        <input type="hidden" name="id" value="@food.Id" />
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            🗑️ Remove
+                                        </button>
+                                    </form>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Generate Menu Section -->
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">🎲 Generate Random Menu</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" asp-page-handler="GenerateMenu">
+                        <div class="mb-3">
+                            <label asp-for="NumberOfPlates" class="form-label fw-bold">
+                                How many plates do you want?
+                            </label>
+                            <div class="input-group">
+                                <input type="number"
+                                       asp-for="NumberOfPlates"
+                                       class="form-control"
+                                       min="1"
+                                       max="@Model.ViewModel.Foods.Count"
+                                       placeholder="Enter number of plates">
+                                <span class="input-group-text">🍽️</span>
+                            </div>
+                            <div class="form-text">
+                                Escolha entre 1 e @Model.ViewModel.Foods.Count pratos
+                                @if (Model.ViewModel.Foods.Count > 0)
+                                {
+                                    <span>(You have @Model.ViewModel.Foods.Count foods available)</span>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit"
+                                    class="btn btn-warning btn-lg"
+                                    disabled="@(Model.ViewModel.Foods.Count == 0)">
+                                🎲 Gerar Menu
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Menu Display -->
+            @if (Model.ViewModel.Menu != null && Model.ViewModel.Menu.Count > 0)
+            {
+                <div class="card">
+                    <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">📋 Menu Aleatório</h5>
+                        <span class="badge bg-light text-dark">@Model.ViewModel.Menu.Count plates</span>
+                    </div>
+                    <div class="card-body">
+                        <ol class="list-group list-group-numbered">
+                            @for (int i = 0; i < Model.ViewModel.Menu.Count; i++)
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span><strong>@(i + 1).</strong> @Model.ViewModel.Menu[i]</span>
+                                    <span class="badge bg-primary rounded-pill">Plate @(i + 1)</span>
+                                </li>
+                            }
+                        </ol>
+
+                        <div class="mt-3">
+                            <form method="post" asp-page-handler="GenerateMenu">
+                                <input type="hidden" asp-for="NumberOfPlates" value="@Model.ViewModel.Menu.Count" />
+                                <button type="submit" class="btn btn-outline-success btn-sm w-100">
+                                    🔄 Regenerate with same quantity
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
