@@ -9,9 +9,16 @@ public class FoodService
 
     public FoodService(IConfiguration configuration)
     {
-        var connectionString = configuration.GetValue<string>("MongoDB:ConnectionString");
-        var databaseName = configuration.GetValue<string>("MongoDB:DatabaseName");
-        var collectionName = configuration.GetValue<string>("MongoDB:CollectionName");
+        // Try to get connection string from Railway's MONGO_URL
+        var connectionString = Environment.GetEnvironmentVariable("MONGO_URL")
+            ?? configuration.GetValue<string>("MongoDB:ConnectionString")
+            ?? "mongodb://localhost:27017";
+
+        // Get database and collection names from config or use defaults
+        var databaseName = configuration.GetValue<string>("MongoDB:DatabaseName")
+            ?? "RandomMenuDB";
+        var collectionName = configuration.GetValue<string>("MongoDB:CollectionName")
+            ?? "Foods";
 
         var client = new MongoClient(connectionString);
         var database = client.GetDatabase(databaseName);
