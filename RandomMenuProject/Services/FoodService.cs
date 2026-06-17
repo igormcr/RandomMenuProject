@@ -9,20 +9,52 @@ public class FoodService
 
     public FoodService(IConfiguration configuration)
     {
-        // Try to get connection string from Railway's MONGO_URL
-        var connectionString = Environment.GetEnvironmentVariable("MONGO_URL")
-            ?? configuration.GetValue<string>("MongoDB:ConnectionString")
-            ?? "mongodb://localhost:27017";
+        // Get connection string from environment variable
+        var connectionString = Environment.GetEnvironmentVariable("MONGO_URL");
 
-        // Get database and collection names from config or use defaults
-        var databaseName = configuration.GetValue<string>("MongoDB:DatabaseName")
+        // If not found, try appsettings.json
+        if (string.IsNullOrEmpty(connectionString))
+        {
+            connectionString = configuration.GetValue<string>("MongoDB:ConnectionString");
+        }
+
+        // Fallback to localhost for development
+        if (string.IsNullOrEmpty(connectionString))
+        {
+            connectionString = "mongodb://localhost:27017";
+        }
+
+        // Get database name from environment or config
+        var databaseName = Environment.GetEnvironmentVariable("MONGO_DATABASE_NAME")
+            ?? configuration.GetValue<string>("MongoDB:DatabaseName")
             ?? "RandomMenuDB";
+
         var collectionName = configuration.GetValue<string>("MongoDB:CollectionName")
             ?? "Foods";
 
-        var client = new MongoClient(connectionString);
-        var database = client.GetDatabase(databaseName);
-        _foods = database.GetCollection<FoodItem>(collectionName);
+        // Log the connection (without password for security)
+        var safeConnectionString = connectionString.Contains("@")
+            ? connectionString.Split('@')[1]
+            : connectionString;
+        Console.WriteLine($"Connecting to MongoDB at: {safeConnectionString}");
+        Console.WriteLine($"Database: {databaseName}");
+        Console.WriteLine($"Collection: {collectionName}");
+
+        try
+        {
+            var client = new MongoClient(connectionString);
+            var database = client.GetDatabase(databaseName);
+            _foods = database.GetCollection<FoodItem>(collectionName);
+
+            // Test the connection
+            var test = database.ListCollectionNames().ToList();
+            Console.WriteLine("MongoDB connection successful!");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"MongoDB connection failed: {ex.Message}");
+            throw;
+        }
     }
 
     public async Task<List<FoodItem>> GetAllAsync()
