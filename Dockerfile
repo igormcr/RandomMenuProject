@@ -1,15 +1,28 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
-WORKDIR /app
+WORKDIR /src
 
-# Copy the project file from the subfolder
-COPY RandomMenuProject/*.csproj ./RandomMenuProject/
-RUN dotnet restore ./RandomMenuProject/RandomMenuProject.csproj
+# Copy the solution and project files
+COPY ["RandomMenuProject.sln", "./"]
+COPY ["RandomMenuProject/RandomMenuProject.csproj", "RandomMenuProject/"]
 
-# Copy everything and build
-COPY . ./
-RUN dotnet publish ./RandomMenuProject/RandomMenuProject.csproj -c Release -o out
+# Restore dependencies
+RUN dotnet restore "RandomMenuProject/RandomMenuProject.csproj"
+
+# Copy all source code
+COPY . .
+
+# Build and publish the project
+WORKDIR "/src/RandomMenuProject"
+RUN dotnet build "RandomMenuProject.csproj" -c Release -o /app/build
+RUN dotnet publish "RandomMenuProject.csproj" -c Release -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:9.0
 WORKDIR /app
-COPY --from=build /app/out ./
+EXPOSE 80
+EXPOSE 443
+
+# Copy the published output
+COPY --from=build /app/publish .
+
+# Set the entry point
 ENTRYPOINT ["dotnet", "RandomMenuProject.dll"]
