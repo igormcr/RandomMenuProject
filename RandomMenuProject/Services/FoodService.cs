@@ -9,36 +9,14 @@ public class FoodService
 
     public FoodService(IConfiguration configuration)
     {
-        // Get connection string from environment variable
-        var connectionString = Environment.GetEnvironmentVariable("MONGO_URL");
+        // Use the external URL from Railway
+        var connectionString = "mongodb://mongo:TuyxerCHTmgjnIjVMxCTaqIbcekxvWTC@thomas.proxy.rlwy.net:39608";
+        var databaseName = "RandomMenuDB";
+        var collectionName = "Foods";
 
-        // If not found, try appsettings.json
-        if (string.IsNullOrEmpty(connectionString))
-        {
-            connectionString = configuration.GetValue<string>("MongoDB:ConnectionString");
-        }
-
-        // Fallback to localhost for development
-        if (string.IsNullOrEmpty(connectionString))
-        {
-            connectionString = "mongodb://localhost:27017";
-        }
-
-        // Get database name from environment or config
-        var databaseName = Environment.GetEnvironmentVariable("MONGO_DATABASE_NAME")
-            ?? configuration.GetValue<string>("MongoDB:DatabaseName")
-            ?? "RandomMenuDB";
-
-        var collectionName = configuration.GetValue<string>("MongoDB:CollectionName")
-            ?? "Foods";
-
-        // Log the connection (without password for security)
-        var safeConnectionString = connectionString.Contains("@")
-            ? connectionString.Split('@')[1]
-            : connectionString;
-        Console.WriteLine($"Connecting to MongoDB at: {safeConnectionString}");
-        Console.WriteLine($"Database: {databaseName}");
-        Console.WriteLine($"Collection: {collectionName}");
+        Console.WriteLine($"🔗 Connecting to MongoDB at: thomas.proxy.rlwy.net:39608");
+        Console.WriteLine($"📦 Database: {databaseName}");
+        Console.WriteLine($"📁 Collection: {collectionName}");
 
         try
         {
@@ -47,12 +25,12 @@ public class FoodService
             _foods = database.GetCollection<FoodItem>(collectionName);
 
             // Test the connection
-            var test = database.ListCollectionNames().ToList();
-            Console.WriteLine("MongoDB connection successful!");
+            var collections = database.ListCollectionNames().ToList();
+            Console.WriteLine($"✅ MongoDB connected successfully! Found {collections.Count} collections.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"MongoDB connection failed: {ex.Message}");
+            Console.WriteLine($"❌ MongoDB connection failed: {ex.Message}");
             throw;
         }
     }
