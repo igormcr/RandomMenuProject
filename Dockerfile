@@ -1,4 +1,5 @@
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+# Use .NET 8 SDK instead of 9
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
 # Copy the solution and project files
@@ -16,7 +17,8 @@ WORKDIR "/src/RandomMenuProject"
 RUN dotnet build "RandomMenuProject.csproj" -c Release -o /app/build
 RUN dotnet publish "RandomMenuProject.csproj" -c Release -o /app/publish
 
-FROM mcr.microsoft.com/dotnet/aspnet:9.0
+# Use .NET 8 runtime instead of 9
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 EXPOSE 80
 EXPOSE 443
