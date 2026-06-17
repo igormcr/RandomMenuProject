@@ -1,0 +1,6 @@
+[build]
+builder = "nixpacks"
+
+[build.config]
+# Tell Railway where your .csproj file is
+CS_PROJ = "RandomMenuProject/RandomMenuProject.csproj"
