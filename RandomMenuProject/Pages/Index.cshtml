@@ -110,26 +110,47 @@
             </div>
 
             <!-- Menu Display -->
+            <!-- Menu Display -->
             @if (Model.ViewModel.Menu != null && Model.ViewModel.Menu.Count > 0)
             {
-                <div class="card">
+                // We create the formatted string here using LINQ
+                // This joins the items with a new line and adds numbering
+                var menuTextContent = string.Join(Environment.NewLine,
+                Model.ViewModel.Menu.Select((item, index) => $"{index + 1}. {item}"));
+
+                <div class="card mb-4">
                     <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">📋 Menu Aleatório</h5>
                         <span class="badge bg-light text-dark">@Model.ViewModel.Menu.Count pratos</span>
                     </div>
                     <div class="card-body">
-                        <ol class="list-group list-group-numbered">
+                        <!-- Visual List (The one you already had) -->
+                        <ol class="list-group list-group-numbered mb-4">
                             @for (int i = 0; i < Model.ViewModel.Menu.Count; i++)
                             {
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <span><strong>@(i + 1).</strong> @Model.ViewModel.Menu[i]</span>
+                                    <span><strong class="me-2">@(i + 1).</strong> @Model.ViewModel.Menu[i]</span>
                                     <span class="badge bg-primary rounded-pill">Plate @(i + 1)</span>
                                 </li>
                             }
                         </ol>
 
+                        <hr />
+
+                        <!-- NEW: Textbox Section -->
                         <div class="mt-3">
-                            <form method="post" asp-page-handler="GenerateMenu">
+                            <label class="form-label fw-bold">Texto para copiar:</label>
+                            <div class="input-group">
+                                <textarea class="form-control"
+                                      id="menuTextArea"
+                                      rows="5"
+                                      readonly>@menuTextContent</textarea>
+                            </div>
+                            <div id="copyFeedback" class="form-text text-success" style="display:none;">Copiado para a área de transferência!</div>
+                        </div>
+
+                        <div class="mt-4">
+                            <form method="post" asp-page-string="GenerateMenu">
                                 <input type="hidden" asp-for="NumberOfPlates" value="@Model.ViewModel.Menu.Count" />
                                 <button type="submit" class="btn btn-outline-success btn-sm w-100">
                                     🔄 Sortear novamente
@@ -139,6 +160,7 @@
                     </div>
                 </div>
             }
+
         </div>
     </div>
 </div>
